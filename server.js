@@ -78,7 +78,7 @@ async function sendOrderEmails(order) {
             <strong style="color:#1A3A2B">Shipping to:</strong><br>
             <span style="color:#555">${order.shipping.fullName}, ${order.shipping.address}, ${order.shipping.cityStatePin}</span>
         </div>
-        <p style="color:#aaa;font-size:12px;margin-top:20px;text-align:center">FSSAI Lic. No. 10022026000109 | akananaturals.com</p>
+        <p style="color:#aaa;font-size:12px;margin-top:20px;text-align:center">FSSAI Lic. No. 22726241000098 | akananaturals.com</p>
     </div>`;
 
     const merchantHtml = `
