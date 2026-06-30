@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Story - Akana Naturals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .story-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .story-row {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            margin-bottom: 80px;
+        }
+        .story-row.reverse {
+            flex-direction: row-reverse;
+        }
+        .story-col-text {
+            flex: 1.2;
+        }
+        .story-col-image {
+            flex: 0.8;
+        }
+        .story-image-card {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            border: 2px solid var(--border);
+            transition: transform 0.3s ease;
+        }
+        .story-image-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+        .story-image-card:hover {
+            transform: scale(1.02);
+        }
+        .story-tag {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 1.5px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 992px) {
+            .story-row, .story-row.reverse {
+                flex-direction: column;
+                gap: 30px;
+                margin-bottom: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header class="main-header scrolled">
+        <div class="container nav-container">
+            <a href="index.html" class="logo-link" id="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                <img src="assets/logo.png" alt="Akana Naturals Logo" style="height: 40px; width: 40px; border-radius: 50%; object-fit: cover;">
+                <span class="logo-text">Akana<span>Naturals</span></span>
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <a href="index.html#shop">Shop</a>
+                <a href="index.html#benefits">Superfood Benefits</a>
+                <a href="index.html#reviews">Reviews</a>
+                <a href="index.html#faq">FAQ</a>
+                <a href="story.html" class="active" style="color: var(--accent);">Our Story</a>
+            </nav>
+            
+            <div class="nav-actions">
+                <a href="index.html#shop" class="btn btn-primary btn-sm" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 50px;">Shop Now</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Story Hero Banner -->
+    <div style="background: linear-gradient(135deg, #1A3A2B 0%, #0F2319 100%); padding: 140px 0 90px; text-align: center; color: #ffffff;">
+        <div class="container" style="max-width: 900px;">
+            <span class="badge" style="background: rgba(212, 175, 55, 0.15); color: var(--accent); border: 1px solid rgba(212, 175, 55, 0.3); font-weight: 700; padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; letter-spacing: 1.5px; text-transform: uppercase;">Our Origin Story</span>
+            <h1 style="font-size: 3.2rem; font-family: 'Outfit', sans-serif; margin-top: 20px; font-weight: 800; color: #ffffff; line-height: 1.2;">Healthy Snacking, <span style="color: var(--accent);">Built by Engineers</span></h1>
+            <p style="color: #A3B5AC; font-size: 1.15rem; margin-top: 15px; line-height: 1.6;">How three college friends brought scientific precision, agricultural roots, and fiery spices to traditional Indian superfoods.</p>
+        </div>
+    </div>
+
+    <!-- Main Content Section -->
+    <section class="story-section" style="padding: 80px 0; background: #faf8f5;">
+        <div class="story-container">
+            
+            <!-- Row 1: The Harvesting and Bihar Wetlands -->
+            <div class="story-row">
+                <div class="story-col-text">
+                    <span class="story-tag">Step 1: The Source</span>
+                    <h2 style="font-size: 2rem; color: var(--primary); font-family: 'Outfit', sans-serif; margin-bottom: 20px;">Diving Deep into Bihar's Wetlands</h2>
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 15px;">
+                        Did you know that over 90% of the world's makhana is grown in the wetlands of **Bihar**? This ancient crop begins its journey at the muddy bottom of pristine freshwater ponds. Giant, round leaves covered with sharp thorns float on the surface, beneath which the precious seeds develop.
+                    </p>
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7;">
+                        The harvest is one of the most demanding forms of agriculture. Local farmers dive deep into murky waters, using specialized bamboo poles to gather the raw black seeds from the mud. It requires incredible patience, skill, and physical strength. At **Akana Naturals**, we buy directly from these hardworking farmers, ensuring they get paid fairly for their labor while bringing you the finest, fresh-harvested crop.
+                    </p>
+                </div>
+                <div class="story-col-image">
+                    <div class="story-image-card">
+                        <img src="assets/makhana_pond.png" alt="Makhana Pond in Bihar, India">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: The Popping Process -->
+            <div class="story-row reverse">
+                <div class="story-col-text">
+                    <span class="story-tag">Step 2: The Popping Art</span>
+                    <h2 style="font-size: 2rem; color: var(--primary); font-family: 'Outfit', sans-serif; margin-bottom: 20px;">The Pop that Redefined Snacking</h2>
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 15px;">
+                        Raw makhana seeds are hard, black, and look like small pebbles. To turn them into the crispy, white puff we love, they must undergo a meticulous roasting and popping process. 
+                    </p>
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7;">
+                        The seeds are sun-dried and roasted at precise temperatures in heavy iron woks. At the perfect moment, they are taken out and struck immediately with a wooden mallet. The heat causes the moisture inside the seed to expand rapidly, bursting open into a crispy, popped white makhana. 
+                    </p>
+                </div>
+                <div class="story-col-image">
+                    <div class="story-image-card">
+                        <img src="assets/makhana_farmer.png" alt="Bihar Farmer holding raw makhana seeds">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: The Founders and spices -->
+            <div class="story-row">
+                <div class="story-col-text">
+                    <span class="story-tag">Step 3: The Tech & Spices</span>
+                    <h2 style="font-size: 2rem; color: var(--primary); font-family: 'Outfit', sans-serif; margin-bottom: 20px;">Engineering the Ultimate Crunch</h2>
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 15px;">
+                        As engineering students, we spent countless nights studying and coding. We wanted a snack that could power our brains without filling us with cholesterol, palm oil, or chemicals. We realized makhana was the ultimate canvas—but it needed high-tech precision.
+                    </p>
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7;">
+                        We designed a roasting profile using hot-air roasting (never deep-fried!) to lock in the nutrition. Then, we created customized gourmet seasoning mixtures. By coating them in a light mist of cold-pressed oil, we created flavors that are absolutely **fiery, zesty, and spicy**—making healthy food incredibly delicious.
+                    </p>
+                </div>
+                <div class="story-col-image">
+                    <div style="background: #ffffff; padding: 35px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); text-align: center;">
+                        <span style="font-size: 3rem;">🌶️ × 🔬</span>
+                        <h3 style="font-size: 1.3rem; color: var(--primary); font-family: 'Outfit', sans-serif; margin-top: 15px;">The Perfect Match</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">Combining traditional wellness with engineering accuracy to deliver gourmet seasoning without compromise.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meet the Founders -->
+            <div style="margin-top: 100px;">
+                <h2 style="font-size: 2.2rem; color: var(--primary); font-family: 'Outfit', sans-serif; margin-bottom: 40px; text-align: center;">Meet the Co-Founders</h2>
+                <div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto;">
+                    <!-- Amit -->
+                    <div class="founder-card" style="display: flex; align-items: center; gap: 25px; text-align: left; padding: 25px;">
+                        <div class="founder-avatar" style="margin: 0; flex-shrink: 0; width: 70px; height: 70px; font-size: 1.5rem;">AP</div>
+                        <div>
+                            <h3 class="founder-name">Amit Prajapati</h3>
+                            <p class="founder-role">Co-Founder</p>
+                            <span class="founder-edu">B-Tech Computer Science (CSE)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Kundan -->
+                    <div class="founder-card" style="display: flex; align-items: center; gap: 25px; text-align: left; padding: 25px;">
+                        <div class="founder-avatar" style="margin: 0; flex-shrink: 0; width: 70px; height: 70px; font-size: 1.5rem;">KM</div>
+                        <div>
+                            <h3 class="founder-name">Kundan Maurya</h3>
+                            <p class="founder-role">Co-Founder</p>
+                            <span class="founder-edu">B-Tech Electronics & Comm. (ECE)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Utkarsh -->
+                    <div class="founder-card" style="display: flex; align-items: center; gap: 25px; text-align: left; padding: 25px;">
+                        <div class="founder-avatar" style="margin: 0; flex-shrink: 0; width: 70px; height: 70px; font-size: 1.5rem;">UM</div>
+                        <div>
+                            <h3 class="founder-name">Utkarsh Mishra</h3>
+                            <p class="founder-role">Co-Founder</p>
+                            <span class="founder-edu">B-Tech Electronics & Comm. (ECE)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="index.html" class="logo-link" style="display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 15px;">
+                    <img src="assets/logo.png" alt="Akana Naturals Logo" style="height: 40px; width: 40px; border-radius: 50%; object-fit: cover;">
+                    <span class="logo-text">Akana<span>Naturals</span></span>
+                </a>
+                <p><strong>Healthy Hai Khana To Akana.</strong> Pure, nutritious, and delicious. Redefining snacking standard for a healthier tomorrow, one crunch at a time.</p>
+            </div>
+            
+            <div class="footer-links-col">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html#shop">Shop Now</a></li>
+                    <li><a href="index.html#benefits">Superfood Benefits</a></li>
+                    <li><a href="index.html#reviews">Customer Reviews</a></li>
+                    <li><a href="index.html#faq">FAQs</a></li>
+                    <li><a href="story.html">Our Story</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-links-col">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <h3>Contact Us</h3>
+                <p>Feel free to reach out to us for any questions or support.</p>
+                <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.95rem;">
+                    <a href="mailto:akananaturals.help@gmail.com" style="color: var(--accent); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--accent)'">
+                        📧 akananaturals.help@gmail.com
+                    </a>
+                    <a href="tel:+919569431400" style="color: var(--accent); text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--accent)'">
+                        📞 +91 9569431400
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container footer-bottom">
+            <p>&copy; 2026 Akana Naturals Pvt. Ltd. All rights reserved.</p>
+            <p>Made with 💚 in India | FSSAI Lic. No. 22726241000098</p>
+        </div>
+    </footer>
+
+</body>
+</html>
