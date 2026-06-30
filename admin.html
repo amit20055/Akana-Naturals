@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Akana Naturals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1A3A2B; --primary-light: #2D5843;
+            --accent: #D4AF37; --accent-hover: #BCA030;
+            --bg: #F4F6F5; --white: #fff;
+            --border: #E3E8E5; --text: #2D312E; --muted: #6A736E;
+            --success: #2E7D32; --error: #C62828;
+            --radius: 10px; --shadow: 0 4px 16px rgba(26,58,43,0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ── Login Screen ──────────────────────────────────────── */
+        #loginScreen {
+            position: fixed; inset: 0; background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; transition: opacity 0.4s ease;
+        }
+        #loginScreen.hidden { opacity: 0; pointer-events: none; }
+
+        .login-card {
+            background: var(--white); border-radius: 16px;
+            padding: 44px 40px; max-width: 400px; width: 90%;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+        .login-logo { font-family:'Outfit',sans-serif; font-size:1.6rem; color:var(--primary); font-weight:800; margin-bottom:4px; }
+        .login-logo span { color:var(--accent); }
+        .login-subtitle { font-size:0.85rem; color:var(--muted); margin-bottom:32px; }
+
+        .login-label { font-size:0.8rem; font-weight:600; color:var(--primary); display:block; margin-bottom:6px; }
+        .login-input {
+            width:100%; padding:13px 16px; border:2px solid var(--border);
+            border-radius:8px; font-size:1rem; outline:none; font-family:'Inter',sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .login-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,58,43,0.1); }
+        .login-input.error { border-color:var(--error); }
+
+        .login-error { font-size:0.85rem; color:var(--error); margin-top:8px; display:none; font-weight:500; }
+        .login-error.show { display:block; }
+
+        .login-btn {
+            width:100%; padding:14px; background:var(--primary); color:var(--white);
+            border:none; border-radius:8px; font-size:1rem; font-weight:700;
+            cursor:pointer; margin-top:20px; font-family:'Inter',sans-serif;
+            transition:background 0.2s, transform 0.1s;
+            display:flex; align-items:center; justify-content:center; gap:10px;
+        }
+        .login-btn:hover { background:var(--primary-light); }
+        .login-btn:active { transform:scale(0.98); }
+        .login-btn:disabled { opacity:0.7; cursor:not-allowed; }
+
+        .spinner-sm { width:18px; height:18px; border:3px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* ── Sidebar ──────────────────────────────────────────── */
+        .sidebar {
+            position:fixed; top:0; left:0; width:240px; height:100vh;
+            background:var(--primary); display:flex; flex-direction:column;
+            padding:30px 20px; z-index:100;
+        }
+        .sidebar-logo { font-family:'Outfit',sans-serif; font-size:1.4rem; color:var(--accent); margin-bottom:40px; }
+        .sidebar-logo span { color:rgba(255,255,255,0.6); font-size:0.75rem; display:block; font-family:'Inter',sans-serif; font-weight:400; margin-top:4px; }
+        .nav-item {
+            display:flex; align-items:center; gap:12px; padding:12px 16px;
+            border-radius:var(--radius); color:rgba(255,255,255,0.65);
+            cursor:pointer; transition:all 0.2s; margin-bottom:4px; font-weight:500;
+            border:none; background:none; width:100%; text-align:left; font-size:0.95rem;
+        }
+        .nav-item:hover { background:rgba(255,255,255,0.08); color:var(--white); }
+        .nav-item.active { background:var(--accent); color:var(--primary); font-weight:700; }
+        .sidebar-footer { margin-top:auto; display:flex; flex-direction:column; gap:10px; }
+        .sidebar-footer a, .sidebar-footer button {
+            color:rgba(255,255,255,0.5); font-size:0.85rem; display:flex;
+            align-items:center; gap:8px; text-decoration:none;
+            background:none; border:none; cursor:pointer; font-family:'Inter',sans-serif;
+        }
+        .sidebar-footer a:hover, .sidebar-footer button:hover { color:var(--accent); }
+
+        /* ── Main ─────────────────────────────────────────────── */
+        .main { margin-left:240px; padding:30px; min-height:100vh; }
+        .page { display:none; }
+        .page.active { display:block; }
+
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
+        .topbar h1 { font-family:'Outfit',sans-serif; font-size:1.75rem; color:var(--primary); }
+        .topbar-sub { font-size:0.85rem; color:var(--muted); margin-top:4px; }
+
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:20px; margin-bottom:28px; }
+        .stat-card { background:var(--white); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); border:1px solid var(--border); }
+        .stat-card .label { font-size:0.8rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+        .stat-card .value { font-family:'Outfit',sans-serif; font-size:2rem; font-weight:700; color:var(--primary); }
+        .stat-card .sub { font-size:0.8rem; color:var(--muted); margin-top:4px; }
+
+        .card { background:var(--white); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); border:1px solid var(--border); margin-bottom:24px; }
+        .card-title { font-family:'Outfit',sans-serif; font-size:1.15rem; font-weight:700; color:var(--primary); margin-bottom:18px; display:flex; align-items:center; gap:10px; }
+
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+        th { background:var(--bg); padding:12px 14px; text-align:left; font-weight:600; color:var(--primary); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.4px; border-bottom:2px solid var(--border); }
+        td { padding:14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:#f9fbfa; }
+
+        .badge { display:inline-block; padding:3px 10px; border-radius:50px; font-size:0.75rem; font-weight:600; }
+        .badge-pending   { background:#FFF8E1; color:#F57F17; }
+        .badge-shipped   { background:#E3F2FD; color:#1565C0; }
+        .badge-delivered { background:#E8F5E9; color:var(--success); }
+        .badge-cancelled { background:#FFEBEE; color:var(--error); }
+        .badge-instock   { background:#E8F5E9; color:var(--success); }
+        .badge-outstock  { background:#FFEBEE; color:var(--error); }
+
+        .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.85rem; border:none; transition:all 0.2s; font-family:'Inter',sans-serif; }
+        .btn-primary { background:var(--primary); color:var(--white); }
+        .btn-primary:hover { background:var(--primary-light); }
+        .btn-accent { background:var(--accent); color:var(--primary); }
+        .btn-accent:hover { opacity:0.9; }
+        .btn-sm { padding:6px 12px; font-size:0.8rem; }
+
+        .toggle-wrap { display:flex; align-items:center; gap:10px; }
+        .toggle { position:relative; width:44px; height:24px; }
+        .toggle input { opacity:0; width:0; height:0; }
+        .slider { position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:24px; transition:0.3s; }
+        .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; }
+        input:checked + .slider { background:var(--success); }
+        input:checked + .slider:before { transform:translateX(20px); }
+
+        .input-sm { padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.9rem; width:110px; outline:none; transition:0.2s; font-family:'Inter',sans-serif; }
+        .input-sm:focus { border-color:var(--primary); box-shadow:0 0 0 2px rgba(26,58,43,0.1); }
+
+        .select-sm { padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; outline:none; background:var(--white); cursor:pointer; font-family:'Inter',sans-serif; }
+
+        .product-row { display:flex; align-items:center; gap:16px; }
+        .product-row img { width:56px; height:56px; border-radius:8px; object-fit:cover; background:#eee; }
+        .product-row-info .name { font-weight:600; color:var(--primary); }
+        .product-row-info .desc { font-size:0.8rem; color:var(--muted); margin-top:2px; max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        #toast { position:fixed; bottom:28px; right:28px; background:var(--primary); color:var(--white); padding:14px 22px; border-radius:10px; font-size:0.9rem; font-weight:500; opacity:0; transform:translateY(10px); transition:all 0.3s; z-index:9998; pointer-events:none; }
+        #toast.show { opacity:1; transform:translateY(0); }
+        #toast.error { background:var(--error); }
+        #toast.success-toast { background:var(--success); }
+
+        @media (max-width:768px) {
+            .sidebar { width:60px; padding:20px 8px; }
+            .sidebar-logo span, .nav-item span, .sidebar-footer a span, .sidebar-footer button span { display:none; }
+            .sidebar-logo { font-size:1rem; text-align:center; }
+            .main { margin-left:60px; padding:20px 14px; }
+            .stats-grid { grid-template-columns:1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ──────────────────────────────────────────────── -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="login-logo">Akana<span>Naturals</span></div>
+        <div class="login-subtitle">Merchant Admin Panel — Authorized Access Only</div>
+
+        <label class="login-label" for="adminPassword">Admin Password</label>
+        <input type="password" id="adminPassword" class="login-input" placeholder="Enter your admin password" autocomplete="current-password">
+        <div class="login-error" id="loginError">Incorrect password. Please try again.</div>
+
+        <button class="login-btn" id="loginBtn" onclick="doLogin()">
+            <span id="loginBtnText">Login to Dashboard</span>
+        </button>
+    </div>
+</div>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-logo">AN <span>Admin Dashboard</span></div>
+
+    <button class="nav-item active" id="navOrders" onclick="showPage('orders')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>Orders</span>
+    </button>
+
+    <button class="nav-item" id="navInventory" onclick="showPage('inventory')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        <span>Inventory</span>
+    </button>
+
+    <div class="sidebar-footer">
+        <a href="index.html" target="_blank">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <span>View Store</span>
+        </a>
+        <button onclick="doLogout()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Logout</span>
+        </button>
+    </div>
+</aside>
+
+<!-- ── MAIN CONTENT ─────────────────────────────────────────────── -->
+<main class="main">
+
+    <!-- ORDERS PAGE -->
+    <div class="page active" id="pageOrders">
+        <div class="topbar">
+            <div>
+                <h1>Orders</h1>
+                <div class="topbar-sub" id="ordersLastRefresh">Loading...</div>
+            </div>
+            <button class="btn btn-primary" onclick="loadOrders()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Refresh
+            </button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="label">Total Orders</div><div class="value" id="statTotal">–</div></div>
+            <div class="stat-card"><div class="label">Total Revenue</div><div class="value" id="statRevenue">–</div></div>
+            <div class="stat-card"><div class="label">Pending</div><div class="value" id="statPending">–</div></div>
+            <div class="stat-card"><div class="label">Delivered</div><div class="value" id="statDelivered">–</div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+                All Customer Orders
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order #</th><th>Date</th><th>Customer</th>
+                            <th>Items</th><th>Total</th><th>Payment ID</th>
+                            <th>Status</th><th>Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- INVENTORY PAGE -->
+    <div class="page" id="pageInventory">
+        <div class="topbar">
+            <div>
+                <h1>Inventory</h1>
+                <div class="topbar-sub">Edit prices and toggle product availability</div>
+            </div>
+            <button class="btn btn-primary" onclick="loadInventory()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Refresh
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                Product Catalog Management
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Product</th><th>Sale Price</th><th>Original Price</th><th>Stock</th><th>Save</th></tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--muted)">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<div id="toast"></div>
+<script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "p1",
+    "name": "Himalayan Pink Salted",
+    "description": "Slow-roasted to crispy perfection and sprinkled with hand-harvested pink salt crystals and black pepper.",
+    "price": 185,
+    "originalPrice": 199,
+    "image": "assets/classic_salted.png",
+    "badge": "Classic",
+    "badgeColor": "#1A3A2B",
+    "rating": 4.9,
+    "reviews": 312,
+    "inStock": true
+  },
+  {
+    "id": "p2",
+    "name": "Wild Peri-Peri Spice",
+    "description": "Tossed in African Bird's Eye chili pepper, smoked paprika, garlic, and citrus zest. A fiery, zesty treat!",
+    "price": 159,
+    "originalPrice": 199,
+    "image": "assets/spicy_peri_peri.png",
+    "badge": "Hot & Spicy",
+    "badgeColor": "#D32F2F",
+    "rating": 4.8,
+    "reviews": 287,
+    "inStock": true
+  },
+  {
+    "id": "p3",
+    "name": "Sour Cream & Onion",
+    "description": "A delicious blend of rich tangy sour cream, fresh green chives, and savory onions for a classic crunch.",
+    "price": 159,
+    "originalPrice": 199,
+    "image": "assets/sour_cream_onion.png",
+    "badge": "Creamy",
+    "badgeColor": "#388E3C",
+    "rating": 4.7,
+    "reviews": 198,
+    "inStock": true
+  },
+  {
+    "id": "p4",
+    "name": "Caramel Sweet Crunch",
+    "description": "Satisfy your sweet tooth with crisp makhana enveloped in a rich, buttery caramelized sugar glaze.",
+    "price": 169,
+    "originalPrice": 219,
+    "image": "assets/caramel_crunch.png",
+    "badge": "Bestseller",
+    "badgeColor": "#D4AF37",
+    "rating": 4.9,
+    "reviews": 401,
+    "inStock": true
+  }
+]

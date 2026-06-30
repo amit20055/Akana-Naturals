@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Optimization -->
+    <title>Akana Naturals | Premium Roasted Makhana Fox Nuts</title>
+    <meta name="description" content="Savor the crunch of Akana Naturals premium roasted makhana (fox nuts). Healthy, organic, gluten-free, roasted to perfection. Explore our rich variety of flavors.">
+    <meta name="keywords" content="makhana, fox nuts, healthy snacks, organic snacks, roasted makhana, peri peri makhana, akana naturals, gluten free snacks">
+    
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header class="main-header" id="header">
+        <div class="container nav-container">
+            <a href="index.html" class="logo-link" id="logo">
+                <span class="logo-text">Akana<span>Naturals</span></span>
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <a href="#shop">Shop</a>
+                <a href="#benefits">Superfood Benefits</a>
+                <a href="#reviews">Reviews</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+            
+            <div class="nav-actions">
+                <button class="cart-btn" id="cartToggle" aria-label="Shopping Cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <span class="cart-badge" id="cartBadgeCount">0</span>
+                </button>
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer Menu -->
+    <div class="mobile-nav" id="mobileNav">
+        <a href="#shop" onclick="toggleMobileMenu()">Shop</a>
+        <a href="#benefits" onclick="toggleMobileMenu()">Superfood Benefits</a>
+        <a href="#reviews" onclick="toggleMobileMenu()">Reviews</a>
+        <a href="#faq" onclick="toggleMobileMenu()">FAQ</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container hero-grid">
+            <div class="hero-content">
+                <span class="badge hero-badge">✨ 100% Organic Superfood</span>
+                <h1 class="hero-title">Healthy Snacking, <span class="text-accent">Redefined.</span></h1>
+                <p class="hero-description">Discover the crisp, roasted goodness of Akana Naturals Makhana. Gourmet fox nuts packed with protein, low in calories, and seasoned with premium, all-natural ingredients.</p>
+                <div class="hero-ctas">
+                    <a href="#shop" class="btn btn-primary">Shop Flavors</a>
+                    <a href="#benefits" class="btn btn-outline">Learn Benefits</a>
+                </div>
+            </div>
+            <div class="hero-image-container">
+                <img src="assets/classic_salted.png" alt="Delicious Roasted Makhana Bowl" id="heroImage">
+            </div>
+        </div>
+    </section>
+
+    <!-- Certifications / Trust Banner -->
+    <section class="trust-logos">
+        <div class="container logos-container">
+            <div class="trust-logo-item">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>FSSAI Certified Safety</span>
+            </div>
+            <div class="trust-logo-item">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span>100% Organic India</span>
+            </div>
+            <div class="trust-logo-item">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span>Gluten-Free & Non-GMO</span>
+            </div>
+            <div class="trust-logo-item">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                <span>Roasted (Never Fried)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Grid Section -->
+    <section class="products-section" id="shop">
+        <div class="container">
+            <div class="section-header">
+                <h2>Explore Our Gourmet Flavors</h2>
+                <p>Meticulously handpicked, slow-roasted, and tossed in rich spices. Indulge guilt-free!</p>
+            </div>
+            
+            <div class="products-grid" id="productsGrid">
+                
+                <!-- Product 1 -->
+                <div class="product-card" data-id="p1">
+                    <span class="product-card-badge">Classic</span>
+                    <div class="product-img-wrapper">
+                        <img src="assets/classic_salted.png" alt="Classic Salted Makhana">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Himalayan Pink Salted</h3>
+                        <p class="product-desc">Slow-roasted to crispy perfection and sprinkled with hand-harvested pink salt crystals and black pepper.</p>
+                        <div class="stars">⭐⭐⭐⭐⭐ <span>(4.9)</span></div>
+                        <div class="product-meta">
+                            <div class="product-price"><span>₹199</span>₹149</div>
+                            <button class="btn-add-to-cart" onclick="addToCart('p1', 'Himalayan Pink Salted', 149, 'assets/classic_salted.png')">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="product-card" data-id="p2">
+                    <span class="product-card-badge" style="background-color: #D32F2F;">Hot & Spicy</span>
+                    <div class="product-img-wrapper">
+                        <img src="assets/spicy_peri_peri.png" alt="Spicy Peri-Peri Makhana">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Wild Peri-Peri Spice</h3>
+                        <p class="product-desc">Tossed in African Bird's Eye chili pepper, smoked paprika, garlic, and citrus zest. A fiery, zesty treat!</p>
+                        <div class="stars">⭐⭐⭐⭐⭐ <span>(4.8)</span></div>
+                        <div class="product-meta">
+                            <div class="product-price"><span>₹199</span>₹159</div>
+                            <button class="btn-add-to-cart" onclick="addToCart('p2', 'Wild Peri-Peri Spice', 159, 'assets/spicy_peri_peri.png')">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="product-card" data-id="p3">
+                    <span class="product-card-badge" style="background-color: #388E3C;">Creamy</span>
+                    <div class="product-img-wrapper">
+                        <img src="assets/sour_cream_onion.png" alt="Sour Cream and Onion Makhana">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Sour Cream & Onion</h3>
+                        <p class="product-desc">A delicious blend of rich tangy sour cream, fresh green chives, and savory onions for a classic crunch.</p>
+                        <div class="stars">⭐⭐⭐⭐⭐ <span>(4.7)</span></div>
+                        <div class="product-meta">
+                            <div class="product-price"><span>₹199</span>₹159</div>
+                            <button class="btn-add-to-cart" onclick="addToCart('p3', 'Sour Cream & Onion', 159, 'assets/sour_cream_onion.png')">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 4 -->
+                <div class="product-card" data-id="p4">
+                    <span class="product-card-badge" style="background-color: var(--accent); color: var(--primary);">Bestseller</span>
+                    <div class="product-img-wrapper">
+                        <img src="assets/caramel_crunch.png" alt="Caramel Sweet Crunch Makhana">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">Caramel Sweet Crunch</h3>
+                        <p class="product-desc">Satisfy your sweet tooth with crisp makhana enveloped in a rich, buttery caramelized sugar glaze.</p>
+                        <div class="stars">⭐⭐⭐⭐⭐ <span>(4.9)</span></div>
+                        <div class="product-meta">
+                            <div class="product-price"><span>₹219</span>₹169</div>
+                            <button class="btn-add-to-cart" onclick="addToCart('p4', 'Caramel Sweet Crunch', 169, 'assets/caramel_crunch.png')">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Superfood Benefits Section -->
+    <section class="benefits-section" id="benefits">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Makhana is a True Superfood</h2>
+                <p>Grown naturally in freshwater ponds, fox nuts are packed with incredible medical and dietary advantages.</p>
+            </div>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20v-6M9 17h6M12 4v4M4 12h4M16 12h4"/></svg>
+                    </div>
+                    <h3>High Protein & Fiber</h3>
+                    <p>Keeps you full longer, supports muscle growth, and aids digestive health. The ultimate workout companion snack.</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </div>
+                    <h3>Heart & Blood Sugar Friendly</h3>
+                    <p>Low glycemic index (GI) helps regulate blood sugar, while low sodium and high magnesium keep heart health optimum.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+                    </div>
+                    <h3>Zero Trans-Fat</h3>
+                    <p>Slow dry-roasted with minimum olive oil infusion. Absolutely zero cholesterol, artificial colors, or MSG.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </div>
+                    <h3>Anti-Aging Properties</h3>
+                    <p>Fox nuts possess active enzymes that promote collagen creation and contain high amounts of organic antioxidants.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials / Reviews Section -->
+    <section class="testimonials-section" id="reviews">
+        <div class="container">
+            <div class="section-header">
+                <h2>What Our Customers Say</h2>
+                <p>Authentic reviews from snack lovers who switched to the healthier crunch of Akana Naturals.</p>
+            </div>
+            
+            <div class="testimonial-carousel-container">
+                <div class="testimonial-track" id="testimonialTrack">
+                    
+                    <!-- Slide 1 -->
+                    <div class="testimonial-slide">
+                        <div class="testimonial-card">
+                            <div class="stars">⭐⭐⭐⭐⭐</div>
+                            <p class="testimonial-text">"I am obsessed with the Wild Peri-Peri Makhana! It's so crispy and the spice level is absolutely spot on. I've completely replaced my evening potato chips with this."</p>
+                            <div class="testimonial-author">
+                                <div class="author-info">
+                                    <h4>Rohan Sharma</h4>
+                                    <p>Verified Buyer, Delhi</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 2 -->
+                    <div class="testimonial-slide">
+                        <div class="testimonial-card">
+                            <div class="stars">⭐⭐⭐⭐⭐</div>
+                            <p class="testimonial-text">"Finding gluten-free snacks that actually taste good is rare. The Sour Cream and Onion makhana is creamy, crunchy, and feels super light on the stomach."</p>
+                            <div class="testimonial-author">
+                                <div class="author-info">
+                                    <h4>Priya Patel</h4>
+                                    <p>Verified Buyer, Mumbai</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3 -->
+                    <div class="testimonial-slide">
+                        <div class="testimonial-card">
+                            <div class="stars">⭐⭐⭐⭐⭐</div>
+                            <p class="testimonial-text">"My kids love the Caramel Sweet Crunch! I'm happy knowing they're eating a high-protein roasted snack instead of candy. Ordering the bundle pack next!"</p>
+                            <div class="testimonial-author">
+                                <div class="author-info">
+                                    <h4>Dr. Ananya Reddy</h4>
+                                    <p>Pediatrician & Mother, Bangalore</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="carousel-controls">
+                    <button class="carousel-btn" id="prevReview" aria-label="Previous Review">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <button class="carousel-btn" id="nextReview" aria-label="Next Review">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <h2>Frequently Asked Questions</h2>
+                <p>Have questions about shipping, shelf-life, or sourcing? We have answers.</p>
+            </div>
+            
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>How is Akana Makhana roasted?</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We dry-roast our makhana at controlled temperatures to preserve nutrition. We do not deep fry. A minor mist of olive oil is used solely to allow spices to coat each seed uniformly.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What is the shelf life of the product?</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our bags are nitrogen-flushed and sealed. Unopened, they remain fresh for up to 6 months. Once opened, store in an airtight container to maintain crispness.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Do you offer free delivery?</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, we offer free shipping across India for all orders. There is no minimum cart value needed to qualify for free delivery.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Is it safe for toddlers and pregnant women?</span>
+                        <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes! Fox nuts are fully natural seeds rich in calcium and iron, making them an excellent healthy nutrient source for pregnant women and toddlers. We recommend our Classic Salted flavor for young kids.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide Out Cart Drawer -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="cart-close" id="cartClose" aria-label="Close Cart">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        
+        <div class="cart-items" id="cartItemsContainer">
+            <!-- Dynamic Cart Items here -->
+            <div class="cart-empty-message">Your shopping cart is empty. Add some flavors!</div>
+        </div>
+        
+        <div class="cart-footer">
+            <div class="cart-totals">
+                <div class="cart-total-row">
+                    <span>Subtotal</span>
+                    <span id="cartSubtotal">₹0</span>
+                </div>
+                <div class="cart-total-row">
+                    <span>Delivery</span>
+                    <span style="color: var(--success); font-weight: 600;">FREE</span>
+                </div>
+                <div class="cart-total-row grand-total">
+                    <span>Total Amount</span>
+                    <span id="cartGrandTotal">₹0</span>
+                </div>
+            </div>
+            <a href="checkout.html" class="btn btn-primary btn-checkout" id="checkoutBtn">Proceed to Checkout</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="#" class="logo-link">
+                    <span class="logo-text">Akana<span>Naturals</span></span>
+                </a>
+                <p>Pure, nutritious, and delicious. Redefining snacking standard for a healthier tomorrow, one crunch at a time.</p>
+            </div>
+            
+            <div class="footer-links-col">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#shop">Shop Now</a></li>
+                    <li><a href="#benefits">Superfood Benefits</a></li>
+                    <li><a href="#reviews">Customer Reviews</a></li>
+                    <li><a href="#faq">FAQs</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-links-col">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-newsletter">
+                <h3>Get 10% Off Your First Order</h3>
+                <p>Subscribe to our newsletter for exclusive recipes, wellness tips, and discount codes.</p>
+                <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing! Your 10% code is: AKANA10'); this.reset();">
+                    <input type="email" placeholder="Your Email Address" required>
+                    <button type="submit" aria-label="Subscribe">Join</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="container footer-bottom">
+            <p>&copy; 2026 Akana Naturals Pvt. Ltd. All rights reserved.</p>
+            <p>Made with 💚 in India | FSSAI Lic. No. 10022026000109</p>
+        </div>
+    </footer>
+
+    <!-- App Logic Script -->
+    <script src="app.js"></script>
+</body>
+</html>
