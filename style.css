@@ -1464,3 +1464,87 @@ footer.main-footer {
         align-items: start;
     }
 }
+
+/* --- Story & Founder Styles --- */
+.story-section {
+    padding: 80px 0;
+    background: #faf8f5;
+}
+.story-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 50px;
+    align-items: center;
+}
+.founder-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.founder-card {
+    background: #ffffff;
+    padding: 25px 15px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+.founder-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+.founder-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    box-shadow: 0 4px 10px rgba(26, 58, 43, 0.2);
+}
+.founder-name {
+    font-size: 1.1rem;
+    color: var(--primary);
+    font-family: 'Outfit', sans-serif;
+    margin-bottom: 4px;
+}
+.founder-role {
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+.founder-edu {
+    display: inline-block;
+    font-size: 0.8rem;
+    background: #faf8f5;
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+}
+
+@media (max-width: 992px) {
+    .story-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+@media (max-width: 576px) {
+    .founder-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+
