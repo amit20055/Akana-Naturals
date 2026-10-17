@@ -1,203 +1,130 @@
-// db.js - Database controller supporting MongoDB with JSON flat-file fallback
-// Reads and writes products.json and orders.json in the data/ folder by default.
-// If MONGODB_URI env variable is configured, connects to MongoDB.
+// db.js — Database controller
+// Uses MongoDB when MONGODB_URI is set (production/Vercel)
+// Falls back to JSON files for local development
 
-const fs = require('fs');
+const fs   = require('fs');
 const path = require('path');
-const { MongoClient } = require('mongodb');
 
 const PRODUCTS_FILE = path.join(__dirname, 'data', 'products.json');
 const ORDERS_FILE   = path.join(__dirname, 'data', 'orders.json');
 
-let client = null;
+let client   = null;
 let database = null;
 let useMongo = false;
+let initDone = false;
 
-// Initialize connection. Called during server startup.
+// ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
-    const mongoUri = process.env.MONGODB_URI;
-    if (mongoUri) {
-        console.log('[DB] Connecting to MongoDB...');
-        try {
-            // Setup connection with a 5-second timeout to fail fast if DB is down
-            client = new MongoClient(mongoUri, {
-                serverSelectionTimeoutMS: 5000,
-                connectTimeoutMS: 5000
-            });
-            await client.connect();
-            database = client.db();
-            useMongo = true;
-            console.log('[DB] Connected successfully to MongoDB.');
+    if (initDone) return;
+    initDone = true;
 
-            // Seed default products if database collection is empty
-            const productsCol = database.collection('products');
-            const count = await productsCol.countDocuments();
-            if (count === 0) {
-                console.log('[DB] Products collection is empty. Seeding defaults from products.json...');
-                const defaultProducts = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf-8'));
-                await productsCol.insertMany(defaultProducts);
-                console.log('[DB] Seeding completed.');
-            }
-        } catch (err) {
-            console.error('[DB] Failed to connect to MongoDB. Falling back to local files:', err.message);
-            useMongo = false;
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+        console.log('[DB] No MONGODB_URI — using local JSON files (dev mode).');
+        return;
+    }
+
+    try {
+        // Lazy-require so missing package doesn't crash local dev
+        const { MongoClient } = require('mongodb');
+        client   = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 });
+        await client.connect();
+        database = client.db('akana');
+        useMongo = true;
+        console.log('[DB] Connected to MongoDB Atlas ✅');
+
+        // Seed products on first run if collection is empty
+        const col   = database.collection('products');
+        const count = await col.countDocuments();
+        if (count === 0) {
+            const defaults = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf-8'));
+            await col.insertMany(defaults);
+            console.log('[DB] Products seeded to MongoDB.');
         }
-    } else {
-        console.log('[DB] No MONGODB_URI configured. Operating in local JSON flat-file mode.');
+    } catch (err) {
+        console.error('[DB] MongoDB connection failed:', err.message);
+        useMongo = false;
     }
 }
 
-// Check database mode
-function isMongo() {
-    return useMongo;
-}
-
-// --- Generic flat-file helpers ---
+// ─── File helpers (local dev only) ───────────────────────────────────────────
 function readJSON(filepath) {
     try {
-        const raw = fs.readFileSync(filepath, 'utf-8');
-        return JSON.parse(raw);
-    } catch (err) {
-        console.error(`[DB] Error reading ${filepath}:`, err.message);
+        return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+    } catch {
         return [];
     }
 }
 
-// Using sync writing is fine for local fallback operations
 function writeJSON(filepath, data) {
     try {
+        // Ensure data/ directory exists
+        const dir = path.dirname(filepath);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(filepath, JSON.stringify(data, null, 2), 'utf-8');
         return true;
     } catch (err) {
-        console.error(`[DB] Error writing ${filepath}:`, err.message);
+        console.warn('[DB] writeJSON failed (expected on Vercel):', err.message);
         return false;
     }
 }
 
-// --- Products ---
+// ─── Products ────────────────────────────────────────────────────────────────
 async function getAllProducts() {
     if (useMongo) {
-        try {
-            return await database.collection('products').find({}).toArray();
-        } catch (err) {
-            console.error('[DB] Error getting products from MongoDB:', err.message);
-            return [];
-        }
-    } else {
-        return readJSON(PRODUCTS_FILE);
+        return database.collection('products').find({}, { projection: { _id: 0 } }).toArray();
     }
+    return readJSON(PRODUCTS_FILE);
 }
 
 async function updateProduct(id, updates) {
     const allowed = ['price', 'originalPrice', 'inStock', 'name', 'description', 'badge'];
-    const cleanUpdates = {};
-    allowed.forEach(field => {
-        if (updates[field] !== undefined) {
-            cleanUpdates[field] = updates[field];
-        }
-    });
+    const clean   = {};
+    allowed.forEach(f => { if (updates[f] !== undefined) clean[f] = updates[f]; });
 
     if (useMongo) {
-        try {
-            await database.collection('products').updateOne(
-                { id: id },
-                { $set: cleanUpdates }
-            );
-            return await database.collection('products').findOne({ id: id });
-        } catch (err) {
-            console.error('[DB] Error updating product in MongoDB:', err.message);
-            return null;
-        }
-    } else {
-        const products = await getAllProducts();
-        const index = products.findIndex(p => p.id === id);
-        if (index === -1) return null;
-
-        allowed.forEach(field => {
-            if (updates[field] !== undefined) {
-                products[index][field] = updates[field];
-            }
-        });
-
-        writeJSON(PRODUCTS_FILE, products);
-        return products[index];
+        await database.collection('products').updateOne({ id }, { $set: clean });
+        return database.collection('products').findOne({ id }, { projection: { _id: 0 } });
     }
+
+    const products = readJSON(PRODUCTS_FILE);
+    const idx      = products.findIndex(p => p.id === id);
+    if (idx === -1) return null;
+    Object.assign(products[idx], clean);
+    writeJSON(PRODUCTS_FILE, products);
+    return products[idx];
 }
 
-// --- Orders ---
+// ─── Orders ──────────────────────────────────────────────────────────────────
 async function getAllOrders() {
     if (useMongo) {
-        try {
-            return await database.collection('orders').find({}).sort({ createdAt: -1 }).toArray();
-        } catch (err) {
-            console.error('[DB] Error getting orders from MongoDB:', err.message);
-            return [];
-        }
-    } else {
-        return readJSON(ORDERS_FILE);
+        return database.collection('orders').find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
     }
+    return readJSON(ORDERS_FILE);
 }
 
 async function saveOrder(order) {
     if (useMongo) {
-        try {
-            await database.collection('orders').insertOne(order);
-            return order;
-        } catch (err) {
-            console.error('[DB] Error saving order to MongoDB:', err.message);
-            return null;
-        }
-    } else {
-        const orders = await getAllOrders();
-        orders.unshift(order); // Newest first
-        writeJSON(ORDERS_FILE, orders);
+        await database.collection('orders').insertOne(order);
         return order;
     }
-}
-
-async function getOrderById(orderNumber) {
-    if (useMongo) {
-        try {
-            return await database.collection('orders').findOne({ orderNumber: orderNumber });
-        } catch (err) {
-            console.error('[DB] Error getting order from MongoDB:', err.message);
-            return null;
-        }
-    } else {
-        const orders = await getAllOrders();
-        return orders.find(o => o.orderNumber === orderNumber) || null;
-    }
+    const orders = readJSON(ORDERS_FILE);
+    orders.unshift(order);
+    writeJSON(ORDERS_FILE, orders);
+    return order;
 }
 
 async function updateOrderStatus(orderNumber, status) {
     if (useMongo) {
-        try {
-            await database.collection('orders').updateOne(
-                { orderNumber: orderNumber },
-                { $set: { status: status } }
-            );
-            return await database.collection('orders').findOne({ orderNumber: orderNumber });
-        } catch (err) {
-            console.error('[DB] Error updating order status in MongoDB:', err.message);
-            return null;
-        }
-    } else {
-        const orders = await getAllOrders();
-        const order = orders.find(o => o.orderNumber === orderNumber);
-        if (!order) return null;
-        order.status = status;
-        writeJSON(ORDERS_FILE, orders);
-        return order;
+        await database.collection('orders').updateOne({ orderNumber }, { $set: { status } });
+        return database.collection('orders').findOne({ orderNumber }, { projection: { _id: 0 } });
     }
+    const orders = readJSON(ORDERS_FILE);
+    const order  = orders.find(o => o.orderNumber === orderNumber);
+    if (!order) return null;
+    order.status = status;
+    writeJSON(ORDERS_FILE, orders);
+    return order;
 }
 
-module.exports = {
-    init,
-    isMongo,
-    getAllProducts,
-    updateProduct,
-    getAllOrders,
-    saveOrder,
-    getOrderById,
-    updateOrderStatus
-};
+module.exports = { init, getAllProducts, updateProduct, getAllOrders, saveOrder, updateOrderStatus };

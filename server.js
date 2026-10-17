@@ -1,6 +1,4 @@
-// server.js — Akana Naturals Full-Stack E-Commerce Backend
-// Features: Admin auth, Razorpay payment, order management, email alerts
-
+// server.js — Akana Naturals Backend (Vercel + Local compatible)
 require('dotenv').config();
 
 const express    = require('express');
@@ -11,37 +9,45 @@ const nodemailer = require('nodemailer');
 const Razorpay   = require('razorpay');
 const db         = require('./db');
 
-const app  = express();
-const PORT = process.env.PORT || 8080;
-const isProduction = process.env.NODE_ENV === 'production';
+const app = express();
+
+// ─── DB Init (runs once on cold start) ───────────────────────────────────────
+let dbReady = false;
+let dbInitPromise = null;
+
+function ensureDb(req, res, next) {
+    if (dbReady) return next();
+    if (!dbInitPromise) {
+        dbInitPromise = db.init().then(() => { dbReady = true; }).catch(() => { dbReady = true; });
+    }
+    dbInitPromise.then(next);
+}
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
+app.use(ensureDb); // Ensure DB is ready before handling requests
 
-// ─── Razorpay Instance ────────────────────────────────────────────────────────
+// ─── Razorpay ─────────────────────────────────────────────────────────────────
 const razorpay = new Razorpay({
     key_id:     process.env.RAZORPAY_KEY_ID     || 'rzp_test_placeholder',
     key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret'
 });
 
-// ─── Nodemailer Transporter ───────────────────────────────────────────────────
+// ─── Nodemailer ───────────────────────────────────────────────────────────────
 const transporter = nodemailer.createTransport({
-    host:   process.env.SMTP_HOST,
+    host:   process.env.SMTP_HOST || 'smtp.gmail.com',
     port:   parseInt(process.env.SMTP_PORT) || 587,
     secure: false,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
 });
 
-// ─── Admin Token Store (in-memory, resets on server restart) ─────────────────
+// ─── Admin Token Store ────────────────────────────────────────────────────────
 const adminTokens = new Set();
 
-function generateToken() {
-    return crypto.randomBytes(32).toString('hex');
-}
+function generateToken() { return crypto.randomBytes(32).toString('hex'); }
 
-// Middleware: protect all /api/admin/* routes
 function requireAdminAuth(req, res, next) {
     const token = req.headers['x-admin-token'];
     if (!token || !adminTokens.has(token)) {
@@ -56,7 +62,7 @@ async function sendOrderEmails(order) {
         `<tr>
             <td style="padding:8px;border-bottom:1px solid #eee">${i.name} ×${i.quantity}</td>
             <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">₹${i.price * i.quantity}</td>
-         </tr>`
+        </tr>`
     ).join('');
 
     const customerHtml = `
@@ -67,18 +73,19 @@ async function sendOrderEmails(order) {
         <h2 style="color:#1A3A2B">Order Confirmed! 🎉</h2>
         <p>Hi <strong>${order.shipping.fullName}</strong>, thank you for your order!</p>
         <div style="background:#fff;border-radius:8px;padding:20px;border:1px solid #e3e8e5;margin:20px 0">
-            <p style="margin:0 0 12px 0;color:#1A3A2B;font-weight:700">Order #${order.orderNumber} | ${order.date}</p>
+            <p style="margin:0 0 12px;color:#1A3A2B;font-weight:700">Order #${order.orderNumber} | ${order.date}</p>
             <table style="width:100%;border-collapse:collapse">${itemRows}
                 <tr><td style="padding:12px 8px 0;font-weight:700;color:#1A3A2B">Total Paid</td>
-                    <td style="padding:12px 8px 0;font-weight:700;color:#1A3A2B;text-align:right">₹${order.totalAmount}</td></tr>
+                    <td style="padding:12px 8px 0;font-weight:700;color:#1A3A2B;text-align:right">₹${order.totalAmount}</td>
+                </tr>
             </table>
         </div>
-        <p style="color:#555">Estimated delivery: <strong>3–5 business days</strong></p>
+        <p>Estimated delivery: <strong>3–5 business days</strong></p>
         <div style="background:#fff;border-radius:8px;padding:16px;border:1px solid #e3e8e5">
             <strong style="color:#1A3A2B">Shipping to:</strong><br>
             <span style="color:#555">${order.shipping.fullName}, ${order.shipping.address}, ${order.shipping.cityStatePin}</span>
         </div>
-        <p style="color:#aaa;font-size:12px;margin-top:20px;text-align:center">FSSAI Lic. No. 22726241000098 | akananaturals.com</p>
+        <p style="color:#aaa;font-size:12px;margin-top:20px;text-align:center">FSSAI Lic. No. 10022026000109 | akananaturals.com</p>
     </div>`;
 
     const merchantHtml = `
@@ -109,34 +116,33 @@ async function sendOrderEmails(order) {
             subject: `🛒 New Order #${order.orderNumber} – ₹${order.totalAmount} from ${order.shipping.fullName}`,
             html: merchantHtml
         });
-        console.log(`[EMAIL] Sent to ${order.shipping.email} + merchant alert`);
+        console.log(`[EMAIL] Sent to ${order.shipping.email}`);
     } catch (err) {
         console.warn('[EMAIL] Could not send (check .env SMTP settings):', err.message);
     }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PUBLIC API ROUTES
+// PUBLIC ROUTES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// GET /api/products — Public product catalog
 app.get('/api/products', async (req, res) => {
-    res.json({ success: true, products: await db.getAllProducts() });
+    try {
+        const products = await db.getAllProducts();
+        res.json({ success: true, products });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Could not load products.' });
+    }
 });
 
-// GET /api/razorpay-key — Expose public key to frontend safely
 app.get('/api/razorpay-key', (req, res) => {
     res.json({ keyId: process.env.RAZORPAY_KEY_ID || '' });
 });
 
-// POST /api/payment/create-order — Step 1: Create Razorpay order before showing popup
 app.post('/api/payment/create-order', async (req, res) => {
     const { items } = req.body;
-    if (!items || items.length === 0) {
-        return res.status(400).json({ success: false, message: 'Cart is empty.' });
-    }
+    if (!items || items.length === 0) return res.status(400).json({ success: false, message: 'Cart is empty.' });
 
-    // Server-side price calculation (never trust client amounts)
     const products = await db.getAllProducts();
     let totalAmount = 0;
     for (const cartItem of items) {
@@ -147,61 +153,43 @@ app.post('/api/payment/create-order', async (req, res) => {
     }
 
     try {
-        // If keys are placeholder, don't even try to call Razorpay
-        const isPlaceholder = !process.env.RAZORPAY_KEY_ID || 
-                              process.env.RAZORPAY_KEY_ID.includes('placeholder') || 
-                              process.env.RAZORPAY_KEY_ID.includes('PASTE_YOUR_KEY');
-        
-        if (isPlaceholder && !isProduction) {
-            console.log('[PAYMENT] Local bypass to test mode (placeholder key in development)');
-            return res.json({ success: true, razorpayOrderId: 'test_order_' + Date.now(), amount: totalAmount, testMode: true });
-        }
-
         const razorpayOrder = await razorpay.orders.create({
-            amount:   totalAmount * 100,  // Razorpay uses paise (1 INR = 100 paise)
+            amount: totalAmount * 100,
             currency: 'INR',
-            receipt:  'rcpt_' + Date.now()
+            receipt: 'rcpt_' + Date.now()
         });
         res.json({ success: true, razorpayOrderId: razorpayOrder.id, amount: totalAmount });
     } catch (err) {
-        console.error('[RAZORPAY] Failed to create order:', err.message);
-        // Graceful fallback: if keys not configured, allow test mode ONLY in non-production
-        if (!isProduction) {
-            console.log('[PAYMENT] Graceful fallback to local test mode in development after error');
-            res.json({ success: true, razorpayOrderId: 'test_order_' + Date.now(), amount: totalAmount, testMode: true });
-        } else {
-            res.status(500).json({ success: false, message: 'Payment gateway error. Please try again.' });
+        console.error('[RAZORPAY]', err.message);
+        // Test mode fallback when keys not configured yet
+        if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.includes('placeholder')) {
+            return res.json({ success: true, razorpayOrderId: 'test_' + Date.now(), amount: totalAmount, testMode: true });
         }
+        res.status(500).json({ success: false, message: 'Payment gateway error. Please try again.' });
     }
 });
 
-// POST /api/orders — Step 2: Verify payment + save order
 app.post('/api/orders', async (req, res) => {
     const { items, shipping, razorpayPaymentId, razorpayOrderId, razorpaySignature, testMode } = req.body;
 
     if (!items || items.length === 0) return res.status(400).json({ success: false, message: 'Cart is empty.' });
     if (!shipping?.email || !shipping?.fullName) return res.status(400).json({ success: false, message: 'Shipping details missing.' });
 
-    // ── Verify Razorpay signature ──
-    if (testMode) {
-        if (isProduction) {
-            return res.status(400).json({ success: false, message: 'Test mode is disabled in production.' });
-        }
-    } else {
+    // Verify Razorpay signature (skip in test mode)
+    if (!testMode) {
         if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
             return res.status(400).json({ success: false, message: 'Payment verification data missing.' });
         }
-        const expectedSignature = crypto
+        const expectedSig = crypto
             .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
             .update(`${razorpayOrderId}|${razorpayPaymentId}`)
             .digest('hex');
-
-        if (expectedSignature !== razorpaySignature) {
-            return res.status(400).json({ success: false, message: 'Payment verification failed. Please contact support.' });
+        if (expectedSig !== razorpaySignature) {
+            return res.status(400).json({ success: false, message: 'Payment verification failed.' });
         }
     }
 
-    // ── Server-side price verification ──
+    // Server-side price verification
     const products = await db.getAllProducts();
     let totalAmount = 0;
     const verifiedItems = [];
@@ -214,36 +202,29 @@ app.post('/api/orders', async (req, res) => {
         totalAmount += product.price * qty;
     }
 
-    // ── Save order ──
     const order = {
-        orderNumber:        'AKN-' + Math.floor(100000 + Math.random() * 900000),
-        date:               new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
-        createdAt:          new Date().toISOString(),
-        items:              verifiedItems,
+        orderNumber:       'AKN-' + Math.floor(100000 + Math.random() * 900000),
+        date:              new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+        createdAt:         new Date().toISOString(),
+        items:             verifiedItems,
         totalAmount,
-        status:             'Pending',
-        razorpayPaymentId:  razorpayPaymentId || 'TEST_MODE',
-        razorpayOrderId:    razorpayOrderId   || 'TEST_MODE',
+        status:            'Pending',
+        razorpayPaymentId: razorpayPaymentId || 'TEST_MODE',
+        razorpayOrderId:   razorpayOrderId   || 'TEST_MODE',
         shipping
     };
 
-    const saved = await db.saveOrder(order);
-    if (!saved) {
-        return res.status(500).json({ success: false, message: 'Database error saving your order. Please contact support.' });
-    }
-
-    console.log(`[ORDER] ✅ ${order.orderNumber} | ₹${order.totalAmount} | ${shipping.fullName} | Payment: ${order.razorpayPaymentId}`);
+    await db.saveOrder(order);
+    console.log(`[ORDER] ✅ ${order.orderNumber} | ₹${order.totalAmount} | ${shipping.fullName}`);
 
     sendOrderEmails(order); // Non-blocking
-
     res.json({ success: true, order });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ADMIN AUTH ROUTES (public — no token required)
+// ADMIN AUTH ROUTES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// POST /api/admin/login
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (!password || password !== process.env.ADMIN_PASSWORD) {
@@ -251,12 +232,10 @@ app.post('/api/admin/login', (req, res) => {
     }
     const token = generateToken();
     adminTokens.add(token);
-    // Token expires after 8 hours
-    setTimeout(() => adminTokens.delete(token), 8 * 60 * 60 * 1000);
+    setTimeout(() => adminTokens.delete(token), 8 * 60 * 60 * 1000); // 8hr expiry
     res.json({ success: true, token });
 });
 
-// POST /api/admin/logout
 app.post('/api/admin/logout', (req, res) => {
     const token = req.headers['x-admin-token'];
     if (token) adminTokens.delete(token);
@@ -264,39 +243,50 @@ app.post('/api/admin/logout', (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ADMIN PROTECTED ROUTES (require token)
+// ADMIN PROTECTED ROUTES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// GET /api/admin/orders
 app.get('/api/admin/orders', requireAdminAuth, async (req, res) => {
-    res.json({ success: true, orders: await db.getAllOrders() });
+    try {
+        const orders = await db.getAllOrders();
+        res.json({ success: true, orders });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Could not load orders.' });
+    }
 });
 
-// PATCH /api/admin/orders/:orderNumber/status
 app.patch('/api/admin/orders/:orderNumber/status', requireAdminAuth, async (req, res) => {
-    const { status } = req.body;
-    const order = await db.updateOrderStatus(req.params.orderNumber, status);
-    if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
-    res.json({ success: true, order });
+    try {
+        const order = await db.updateOrderStatus(req.params.orderNumber, req.body.status);
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
+        res.json({ success: true, order });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Could not update order status.' });
+    }
 });
 
-// PATCH /api/admin/products/:id
 app.patch('/api/admin/products/:id', requireAdminAuth, async (req, res) => {
-    const updated = await db.updateProduct(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ success: false, message: 'Product not found.' });
-    res.json({ success: true, product: updated });
+    try {
+        const updated = await db.updateProduct(req.params.id, req.body);
+        if (!updated) return res.status(404).json({ success: false, message: 'Product not found.' });
+        res.json({ success: true, product: updated });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Could not update product.' });
+    }
 });
 
-// ─── Start ────────────────────────────────────────────────────────────────────
-async function startServer() {
-    await db.init();
-    app.listen(PORT, () => {
-        console.log(`\n✅  Akana Naturals server running at http://localhost:${PORT}`);
-        console.log(`   🛒  Shop:    http://localhost:${PORT}/index.html`);
-        console.log(`   ⚙️   Admin:   http://localhost:${PORT}/admin.html`);
-        console.log(`   🔑  Admin password: set in .env → ADMIN_PASSWORD`);
-        console.log(`\n   Press Ctrl+C to stop.\n`);
+// ─── Export for Vercel / Local ────────────────────────────────────────────────
+if (require.main === module) {
+    // Running locally with: node server.js
+    const PORT = process.env.PORT || 8080;
+    db.init().then(() => {
+        app.listen(PORT, () => {
+            console.log(`\n✅  Akana Naturals running at http://localhost:${PORT}`);
+            console.log(`   🛒  Shop:   http://localhost:${PORT}/index.html`);
+            console.log(`   ⚙️   Admin:  http://localhost:${PORT}/admin.html\n`);
+        });
     });
+} else {
+    // Exported for Vercel serverless
+    module.exports = app;
 }
-
-startServer();
