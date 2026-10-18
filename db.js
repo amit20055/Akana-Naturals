@@ -29,13 +29,17 @@ async function init() {
         const { Redis } = require('@upstash/redis');
         redis    = new Redis({ url, token });
         useRedis = true;
+
+        // Test connection
+        await redis.ping();
         console.log('[DB] Connected to Upstash Redis ✅');
 
         // Seed products on first run if not present
         const existing = await redis.get('products');
         if (!existing) {
             const defaults = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf-8'));
-            await redis.set('products', JSON.stringify(defaults));
+            // @upstash/redis auto-serializes, so pass the array directly
+            await redis.set('products', defaults);
             console.log('[DB] Products seeded to Upstash.');
         }
     } catch (err) {
@@ -68,9 +72,18 @@ function writeJSON(filepath, data) {
 // ─── Products ────────────────────────────────────────────────────────────────
 async function getAllProducts() {
     if (useRedis) {
-        const raw = await redis.get('products');
-        if (!raw) return readJSON(PRODUCTS_FILE); // fallback to bundled file
-        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+        try {
+            const data = await redis.get('products');
+            if (!data) return readJSON(PRODUCTS_FILE);
+            // @upstash/redis auto-deserializes JSON, so data is already an array
+            if (Array.isArray(data)) return data;
+            // Safety fallback: if it came back as string, parse it
+            if (typeof data === 'string') return JSON.parse(data);
+            return readJSON(PRODUCTS_FILE);
+        } catch (err) {
+            console.error('[DB] Redis getAllProducts error:', err.message);
+            return readJSON(PRODUCTS_FILE);
+        }
     }
     return readJSON(PRODUCTS_FILE);
 }
@@ -81,12 +94,19 @@ async function updateProduct(id, updates) {
     allowed.forEach(f => { if (updates[f] !== undefined) clean[f] = updates[f]; });
 
     if (useRedis) {
-        const products = await getAllProducts();
-        const idx = products.findIndex(p => p.id === id);
-        if (idx === -1) return null;
-        Object.assign(products[idx], clean);
-        await redis.set('products', JSON.stringify(products));
-        return products[idx];
+        try {
+            const products = await getAllProducts();
+            const idx = products.findIndex(p => p.id === id);
+            if (idx === -1) return null;
+            Object.assign(products[idx], clean);
+            // Pass array directly — @upstash/redis auto-serializes
+            await redis.set('products', products);
+            console.log(`[DB] Product ${id} updated in Redis ✅`);
+            return products[idx];
+        } catch (err) {
+            console.error('[DB] Redis updateProduct error:', err.message);
+            return null;
+        }
     }
 
     const products = readJSON(PRODUCTS_FILE);
@@ -100,17 +120,32 @@ async function updateProduct(id, updates) {
 // ─── Orders ──────────────────────────────────────────────────────────────────
 async function getAllOrders() {
     if (useRedis) {
-        const raw = await redis.lrange('orders', 0, -1);
-        if (!raw || raw.length === 0) return [];
-        return raw.map(item => typeof item === 'string' ? JSON.parse(item) : item);
+        try {
+            const data = await redis.get('all_orders');
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            if (typeof data === 'string') return JSON.parse(data);
+            return [];
+        } catch (err) {
+            console.error('[DB] Redis getAllOrders error:', err.message);
+            return [];
+        }
     }
     return readJSON(ORDERS_FILE);
 }
 
 async function saveOrder(order) {
     if (useRedis) {
-        await redis.lpush('orders', JSON.stringify(order));
-        return order;
+        try {
+            const orders = await getAllOrders();
+            orders.unshift(order);
+            await redis.set('all_orders', orders);
+            console.log(`[DB] Order ${order.orderNumber} saved to Redis ✅`);
+            return order;
+        } catch (err) {
+            console.error('[DB] Redis saveOrder error:', err.message);
+            return order;
+        }
     }
     const orders = readJSON(ORDERS_FILE);
     orders.unshift(order);
@@ -120,17 +155,17 @@ async function saveOrder(order) {
 
 async function updateOrderStatus(orderNumber, status) {
     if (useRedis) {
-        // Get all orders, update the matching one, rewrite the list
-        const allOrders = await getAllOrders();
-        const idx = allOrders.findIndex(o => o.orderNumber === orderNumber);
-        if (idx === -1) return null;
-        allOrders[idx].status = status;
-        // Clear and rewrite the list
-        await redis.del('orders');
-        for (const o of allOrders) {
-            await redis.rpush('orders', JSON.stringify(o));
+        try {
+            const orders = await getAllOrders();
+            const idx = orders.findIndex(o => o.orderNumber === orderNumber);
+            if (idx === -1) return null;
+            orders[idx].status = status;
+            await redis.set('all_orders', orders);
+            return orders[idx];
+        } catch (err) {
+            console.error('[DB] Redis updateOrderStatus error:', err.message);
+            return null;
         }
-        return allOrders[idx];
     }
     const orders = readJSON(ORDERS_FILE);
     const order  = orders.find(o => o.orderNumber === orderNumber);
