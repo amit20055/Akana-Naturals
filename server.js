@@ -26,8 +26,15 @@ function ensureDb(req, res, next) {
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), { index: 'index.html' }));
 app.use(ensureDb); // Ensure DB is ready before handling requests
+
+// ─── Explicit HTML routes (ensures Vercel serverless always resolves them) ────
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/checkout', (req, res) => res.sendFile(path.join(__dirname, 'checkout.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+app.get('/story', (req, res) => res.sendFile(path.join(__dirname, 'story.html')));
+app.get('/success', (req, res) => res.sendFile(path.join(__dirname, 'success.html')));
 
 // ─── Razorpay ─────────────────────────────────────────────────────────────────
 const razorpay = new Razorpay({
