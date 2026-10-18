@@ -1,5 +1,5 @@
 // db.js — Database controller
-// Uses MongoDB when MONGODB_URI is set (production/Vercel)
+// Uses Upstash Redis when UPSTASH env vars are set (production/Vercel)
 // Falls back to JSON files for local development
 
 const fs   = require('fs');
@@ -8,42 +8,39 @@ const path = require('path');
 const PRODUCTS_FILE = path.join(__dirname, 'data', 'products.json');
 const ORDERS_FILE   = path.join(__dirname, 'data', 'orders.json');
 
-let client   = null;
-let database = null;
-let useMongo = false;
-let initDone = false;
+let redis      = null;
+let useRedis   = false;
+let initDone   = false;
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
     if (initDone) return;
     initDone = true;
 
-    const mongoUri = process.env.MONGODB_URI;
-    if (!mongoUri) {
-        console.log('[DB] No MONGODB_URI — using local JSON files (dev mode).');
+    const url   = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    if (!url || !token) {
+        console.log('[DB] No Upstash config — using local JSON files (dev mode).');
         return;
     }
 
     try {
-        // Lazy-require so missing package doesn't crash local dev
-        const { MongoClient } = require('mongodb');
-        client   = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 });
-        await client.connect();
-        database = client.db('akana');
-        useMongo = true;
-        console.log('[DB] Connected to MongoDB Atlas ✅');
+        const { Redis } = require('@upstash/redis');
+        redis    = new Redis({ url, token });
+        useRedis = true;
+        console.log('[DB] Connected to Upstash Redis ✅');
 
-        // Seed products on first run if collection is empty
-        const col   = database.collection('products');
-        const count = await col.countDocuments();
-        if (count === 0) {
+        // Seed products on first run if not present
+        const existing = await redis.get('products');
+        if (!existing) {
             const defaults = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf-8'));
-            await col.insertMany(defaults);
-            console.log('[DB] Products seeded to MongoDB.');
+            await redis.set('products', JSON.stringify(defaults));
+            console.log('[DB] Products seeded to Upstash.');
         }
     } catch (err) {
-        console.error('[DB] MongoDB connection failed:', err.message);
-        useMongo = false;
+        console.error('[DB] Upstash connection failed:', err.message);
+        useRedis = false;
     }
 }
 
@@ -58,21 +55,22 @@ function readJSON(filepath) {
 
 function writeJSON(filepath, data) {
     try {
-        // Ensure data/ directory exists
         const dir = path.dirname(filepath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(filepath, JSON.stringify(data, null, 2), 'utf-8');
         return true;
     } catch (err) {
-        console.warn('[DB] writeJSON failed (expected on Vercel):', err.message);
+        console.warn('[DB] writeJSON failed:', err.message);
         return false;
     }
 }
 
 // ─── Products ────────────────────────────────────────────────────────────────
 async function getAllProducts() {
-    if (useMongo) {
-        return database.collection('products').find({}, { projection: { _id: 0 } }).toArray();
+    if (useRedis) {
+        const raw = await redis.get('products');
+        if (!raw) return readJSON(PRODUCTS_FILE); // fallback to bundled file
+        return typeof raw === 'string' ? JSON.parse(raw) : raw;
     }
     return readJSON(PRODUCTS_FILE);
 }
@@ -82,9 +80,13 @@ async function updateProduct(id, updates) {
     const clean   = {};
     allowed.forEach(f => { if (updates[f] !== undefined) clean[f] = updates[f]; });
 
-    if (useMongo) {
-        await database.collection('products').updateOne({ id }, { $set: clean });
-        return database.collection('products').findOne({ id }, { projection: { _id: 0 } });
+    if (useRedis) {
+        const products = await getAllProducts();
+        const idx = products.findIndex(p => p.id === id);
+        if (idx === -1) return null;
+        Object.assign(products[idx], clean);
+        await redis.set('products', JSON.stringify(products));
+        return products[idx];
     }
 
     const products = readJSON(PRODUCTS_FILE);
@@ -97,15 +99,17 @@ async function updateProduct(id, updates) {
 
 // ─── Orders ──────────────────────────────────────────────────────────────────
 async function getAllOrders() {
-    if (useMongo) {
-        return database.collection('orders').find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
+    if (useRedis) {
+        const raw = await redis.lrange('orders', 0, -1);
+        if (!raw || raw.length === 0) return [];
+        return raw.map(item => typeof item === 'string' ? JSON.parse(item) : item);
     }
     return readJSON(ORDERS_FILE);
 }
 
 async function saveOrder(order) {
-    if (useMongo) {
-        await database.collection('orders').insertOne(order);
+    if (useRedis) {
+        await redis.lpush('orders', JSON.stringify(order));
         return order;
     }
     const orders = readJSON(ORDERS_FILE);
@@ -115,9 +119,18 @@ async function saveOrder(order) {
 }
 
 async function updateOrderStatus(orderNumber, status) {
-    if (useMongo) {
-        await database.collection('orders').updateOne({ orderNumber }, { $set: { status } });
-        return database.collection('orders').findOne({ orderNumber }, { projection: { _id: 0 } });
+    if (useRedis) {
+        // Get all orders, update the matching one, rewrite the list
+        const allOrders = await getAllOrders();
+        const idx = allOrders.findIndex(o => o.orderNumber === orderNumber);
+        if (idx === -1) return null;
+        allOrders[idx].status = status;
+        // Clear and rewrite the list
+        await redis.del('orders');
+        for (const o of allOrders) {
+            await redis.rpush('orders', JSON.stringify(o));
+        }
+        return allOrders[idx];
     }
     const orders = readJSON(ORDERS_FILE);
     const order  = orders.find(o => o.orderNumber === orderNumber);
